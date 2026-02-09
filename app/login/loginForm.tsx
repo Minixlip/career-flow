@@ -1,18 +1,29 @@
-import { login } from './actions';
+'use client';
+
+import { useActionState, useEffect, useState } from 'react';
+import { login, type LoginActionState } from './actions';
 import Link from 'next/link';
 import { FaRegUserCircle } from 'react-icons/fa';
 import { FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi';
+import { toast } from 'sonner';
 
-export default function LoginForm({
-  showPassword,
-  setShowPassword,
-}: {
-  showPassword: boolean;
-  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
+const initialLoginState: LoginActionState = {
+  error: null,
+};
+
+export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [state, formAction, isPending] = useActionState(login, initialLoginState);
+
+  useEffect(() => {
+    if (state.error) {
+      toast.error(state.error, { id: 'login-error' });
+    }
+  }, [state]);
+
   return (
     <form
-      action={login}
+      action={formAction}
       className="relative z-10 w-full max-w-xl rounded-[2.5rem] border border-white/45 bg-primary-foreground/55 p-6 shadow-[0_20px_80px_-32px_rgba(81,102,197,0.65)] backdrop-blur-md md:p-10"
     >
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-sky-300 shadow-lg shadow-indigo-300/40">
@@ -73,9 +84,10 @@ export default function LoginForm({
 
       <button
         type="submit"
-        className="mt-9 w-full rounded-full bg-gradient-to-r from-indigo-400 to-blue-500 px-6 py-4 text-4xl font-medium text-white shadow-[0_16px_28px_-18px_rgba(52,93,214,0.9)] transition hover:brightness-105 cursor-pointer"
+        disabled={isPending}
+        className="mt-9 w-full cursor-pointer rounded-full bg-gradient-to-r from-indigo-400 to-blue-500 px-6 py-4 text-4xl font-medium text-white shadow-[0_16px_28px_-18px_rgba(52,93,214,0.9)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-75"
       >
-        Log In
+        {isPending ? 'Logging In...' : 'Log In'}
       </button>
 
       <p className="mt-10 text-center text-xl text-slate-500">
